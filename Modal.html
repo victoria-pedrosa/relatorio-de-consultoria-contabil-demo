@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root{
+    --verde-escuro:#003528; --verde:#00A176; --verde-claro:#7FBBA3;
+    --bg:#F7FAF8; --card:#FFFFFF; --linha:#D7E5DF; --card2:#EEF5F1;
+    --txt:#003528; --txt2:#3A453F; --txt3:#6E7C75; --alerta:#C1592F;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:13px/1.45 Arial,Helvetica,sans-serif;color:var(--txt2);background:var(--bg)}
+  header{background:var(--verde-escuro);color:#fff;padding:14px 20px}
+  header h1{margin:0;font:600 15px Arial;letter-spacing:.02em}
+  header p{margin:3px 0 0;font-size:11.5px;color:var(--verde-claro)}
+
+  .tabs{display:flex;gap:2px;background:var(--verde-escuro);padding:0 20px}
+  .tab{padding:8px 16px;font-size:12px;color:var(--verde-claro);cursor:pointer;
+       border-radius:6px 6px 0 0;user-select:none}
+  .tab.ativa{background:var(--bg);color:var(--verde-escuro);font-weight:bold}
+
+  main{padding:16px 20px 96px;}
+  .painel{display:none} .painel.ativo{display:block}
+
+  .barra{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  input[type=search],select{padding:7px 10px;border:1px solid var(--linha);border-radius:6px;
+       font-size:12.5px;background:#fff;color:var(--txt2)}
+  input[type=search]{flex:1;min-width:220px}
+
+  button{border:0;border-radius:6px;padding:8px 14px;font:600 12.5px Arial;cursor:pointer}
+  .b-primario{background:var(--verde);color:#fff}
+  .b-primario:hover{background:#008a65}
+  .b-secundario{background:#fff;color:var(--verde-escuro);border:1px solid var(--linha)}
+  .b-secundario:hover{background:var(--card2)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+
+  .grupo{background:var(--card);border:1px solid var(--linha);border-radius:8px;
+         margin-bottom:8px;overflow:hidden}
+  .grupo-cab{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+  .grupo-cab:hover{background:var(--card2)}
+  .grupo-nome{flex:1;font-weight:bold;color:var(--txt);font-size:13px}
+  .grupo-meta{font-size:11px;color:var(--txt3)}
+  .pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:bold}
+  .pill-ok{background:#E3F3EC;color:#00734f}
+  .pill-falta{background:#FBEDE6;color:var(--alerta)}
+  .arquivos{border-top:1px solid var(--linha);padding:4px 12px 10px 40px;display:none}
+  .grupo.aberto .arquivos{display:block}
+  .arq{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:11.5px;color:var(--txt3)}
+  .arq .tipo{background:var(--card2);color:var(--txt);border-radius:4px;padding:1px 7px;font-size:10px}
+
+  .dropzone{border:2px dashed var(--verde-claro);border-radius:10px;background:#fff;
+       padding:28px;text-align:center;color:var(--txt3);font-size:12.5px}
+  .dropzone.hover{background:var(--card2);border-color:var(--verde)}
+  .lista-upload{margin-top:10px}
+  .lista-upload div{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:11.5px;
+       border-bottom:1px solid var(--linha)}
+
+  #progresso{position:fixed;left:0;right:0;bottom:0;background:#fff;
+       border-top:1px solid var(--linha);padding:10px 20px}
+  .trilho{height:6px;background:var(--card2);border-radius:4px;overflow:hidden;margin:8px 0}
+  .preench{height:100%;width:0;background:var(--verde);transition:width .3s}
+  .status{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .status span{font-size:11.5px;color:var(--txt3)}
+
+  .log{max-height:170px;overflow:auto;font-size:11.5px;margin-top:6px}
+  .log div{padding:3px 0;border-bottom:1px solid var(--linha)}
+  .log .ok::before{content:'✓ ';color:var(--verde)}
+  .log .erro::before{content:'✕ ';color:var(--alerta)}
+  .log a{color:var(--verde);text-decoration:none;margin-left:8px}
+  .aviso{background:#FBEDE6;color:#8a3b1c;border-radius:6px;padding:10px 12px;font-size:12px;margin-bottom:12px}
+  .vazio{text-align:center;color:var(--txt3);padding:40px;font-size:12.5px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--card2);
+        border-top-color:var(--verde);border-radius:50%;animation:g .7s linear infinite;vertical-align:-2px}
+  @keyframes g{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Importação de Documentos</h1>
+  <p>Relatório de Consultoria Contábil · Escritório Contábil Exemplo</p>
+</header>
+
+<div class="tabs">
+  <div class="tab ativa" data-p="drive">📁 Pasta do Drive</div>
+  <div class="tab" data-p="upload">⬆️ Enviar arquivos</div>
+</div>
+
+<main>
+
+  <!-- ============ PAINEL DRIVE ============ -->
+  <section class="painel ativo" id="p-drive">
+    <div class="barra">
+      <input type="search" id="busca" placeholder="Filtrar empresa, CNPJ ou código…">
+      <select id="filtro">
+        <option value="todas">Todas as empresas</option>
+        <option value="completas">Só com documentos completos</option>
+        <option value="incompletas">Só incompletas</option>
+      </select>
+      <button class="b-secundario" onclick="carregarDrive()">↻ Recarregar</button>
+      <button class="b-secundario" onclick="marcar(true)">Marcar todas</button>
+      <button class="b-secundario" onclick="marcar(false)">Limpar</button>
+    </div>
+    <div id="aviso-drive"></div>
+    <div id="lista"><div class="vazio"><span class="spin"></span> Lendo a pasta do Drive…</div></div>
+  </section>
+
+  <!-- ============ PAINEL UPLOAD ============ -->
+  <section class="painel" id="p-upload">
+    <div class="barra">
+      <select id="empresa-upload"><option value="">Enviar para a raiz da pasta</option></select>
+      <button class="b-secundario" onclick="document.getElementById('file').click()">Escolher arquivos…</button>
+      <input type="file" id="file" accept="application/pdf" multiple hidden>
+    </div>
+    <div class="dropzone" id="dz">
+      Arraste aqui os PDFs de DRE, Balancete e Análise Horizontal<br>
+      <small>os arquivos são gravados na pasta configurada do Drive</small>
+    </div>
+    <div class="lista-upload" id="lista-upload"></div>
+    <div class="barra" style="margin-top:12px">
+      <button class="b-primario" id="btn-enviar" onclick="enviarArquivos()" disabled>Enviar para o Drive</button>
+    </div>
+  </section>
+
+</main>
+
+<div id="progresso">
+  <div class="status">
+    <span id="msg">Selecione as empresas e clique em Gerar.</span>
+    <div style="display:flex;gap:8px">
+      <button class="b-secundario" id="btn-parar" onclick="parar()" disabled>Parar</button>
+      <button class="b-primario" id="btn-gerar" onclick="gerar()" disabled>Gerar relatórios</button>
+    </div>
+  </div>
+  <div class="trilho"><div class="preench" id="pf"></div></div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+var DADOS = { grupos: [], semVinculo: [], pasta: null };
+var EMPRESAS = [];      // base do Cadastro, para vínculo manual
+var SELECAO = {};        // nomeEmpresa -> true
+var FILA = [], parado = false, feitos = 0;
+
+// ---------------- abas ----------------
+document.querySelectorAll('.tab').forEach(function (t) {
+  t.onclick = function () {
+    document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('ativa'); });
+    document.querySelectorAll('.painel').forEach(function (x) { x.classList.remove('ativo'); });
+    t.classList.add('ativa');
+    document.getElementById('p-' + t.dataset.p).classList.add('ativo');
+  };
+});
+
+// ---------------- carregar pasta ----------------
+function carregarDrive() {
+  document.getElementById('lista').innerHTML =
+    '<div class="vazio"><span class="spin"></span> Lendo a pasta do Drive…</div>';
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) {
+      document.getElementById('lista').innerHTML =
+        '<div class="aviso"><b>Não foi possível abrir a pasta.</b><br>' + esc(r.erro) + '</div>';
+      return;
+    }
+    DADOS = r;
+    renderSemVinculo();
+    renderizar();
+    preencherSelectEmpresas();
+  }).withFailureHandler(falhou).apiListarDocumentosDrive();
+}
+
+function preencherSelectEmpresas() {
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) return;
+    EMPRESAS = r.empresas;
+    var sel = document.getElementById('empresa-upload');
+    var escolhida = sel.value;
+    sel.innerHTML = '<option value="">Enviar para a raiz da pasta</option>';
+    r.empresas.forEach(function (e) {
+      var o = document.createElement('option');
+      o.value = e.empresa; o.textContent = e.empresa;
+      sel.appendChild(o);
+    });
+    sel.value = escolhida;        // preserva a escolha ao recarregar
+    renderSemVinculo();
+  }).apiListarEmpresas();
+}
+
+function renderSemVinculo() {
+  var alvo = document.getElementById('aviso-drive');
+  if (!DADOS.semVinculo || !DADOS.semVinculo.length) { alvo.innerHTML = ''; return; }
+
+  var opcoes = '<option value="">— escolher empresa —</option>' +
+    EMPRESAS.map(function (e) {
+      return '<option value="' + esc(e.empresa) + '">' + esc(e.empresa) +
+             (e.codigo ? ' (cód. ' + esc(e.codigo) + ')' : '') + '</option>';
+    }).join('');
+
+  var h = '<div class="aviso"><b>' + DADOS.semVinculo.length +
+    ' arquivo(s) sem empresa identificada.</b> O nome do arquivo não bateu com nenhum cadastro, ' +
+    'ou bateu com mais de um. Escolha a empresa ao lado de cada arquivo — ou renomeie incluindo o ' +
+    'código Domínio, que é o vínculo mais seguro.</div><div class="grupo"><div class="arquivos" style="display:block;padding:8px 12px">';
+
+  DADOS.semVinculo.forEach(function (a, i) {
+    h += '<div class="arq"><span class="tipo">' + esc(a.tipo) + '</span>'
+       + '<span style="flex:1">' + esc(a.nome) + '</span>'
+       + '<select onchange="vincular(' + i + ',this.value)" ' +
+         (EMPRESAS.length ? '' : 'disabled ') + '>' + opcoes + '</select></div>';
+  });
+  h += '</div></div>';
+  alvo.innerHTML = h;
+}
+
+/** Move um arquivo sem vínculo para o grupo da empresa escolhida. */
+function vincular(indice, nomeEmpresa) {
+  if (!nomeEmpresa) return;
+  var arq = DADOS.semVinculo[indice];
+  if (!arq) return;
+  var emp = EMPRESAS.filter(function (e) { return e.empresa === nomeEmpresa; })[0] || { empresa: nomeEmpresa };
+  var grupo = DADOS.grupos.filter(function (g) { return g.empresa === nomeEmpresa; })[0];
+  if (!grupo) {
+    grupo = { empresa: emp.empresa, fantasia: emp.fantasia || '', cnpj: emp.cnpj || '',
+              codigo: emp.codigo || '', linha: emp.linha || 0, arquivos: [], completo: false };
+    DADOS.grupos.push(grupo);
+    DADOS.grupos.sort(function (a, b) { return a.empresa.localeCompare(b.empresa); });
+  }
+  grupo.arquivos.push(arq);
+  grupo.completo = temDreEBalancete(grupo.arquivos);
+  DADOS.semVinculo.splice(indice, 1);
+  SELECAO[nomeEmpresa] = true;
+  renderSemVinculo();
+  renderizar();
+}
+
+function temDreEBalancete(arqs) {
+  var t = arqs.map(function (a) { return a.tipo; }).join('|');
+  return /DRE/.test(t) && /Balancete/.test(t);
+}
+
+function renderizar() {
+  var termo = (document.getElementById('busca').value || '').toLowerCase();
+  var filtro = document.getElementById('filtro').value;
+  var alvo = document.getElementById('lista');
+  var html = '';
+
+  var visiveis = DADOS.grupos.filter(function (g) {
+    if (filtro === 'completas' && !g.completo) return false;
+    if (filtro === 'incompletas' && g.completo) return false;
+    if (!termo) return true;
+    return (g.empresa + ' ' + g.fantasia + ' ' + g.cnpj + ' ' + g.codigo).toLowerCase().indexOf(termo) >= 0;
+  });
+
+  if (!visiveis.length) {
+    alvo.innerHTML = '<div class="vazio">Nenhuma empresa encontrada com documentos nesta pasta.</div>';
+    atualizarBotoes(); return;
+  }
+
+  visiveis.forEach(function (g, i) {
+    var marcado = SELECAO[g.empresa] ? 'checked' : '';
+    html += '<div class="grupo" id="g' + i + '">'
+      + '<div class="grupo-cab" onclick="abrir(' + i + ',event)">'
+      + '<input type="checkbox" ' + marcado + ' onclick="event.stopPropagation();sel(\'' + esc(g.empresa).replace(/'/g, "\\'") + '\',this.checked)">'
+      + '<div class="grupo-nome">' + esc(g.empresa)
+      + (g.codigo ? ' <span class="grupo-meta">· cód. ' + esc(g.codigo) + '</span>' : '') + '</div>'
+      + '<span class="grupo-meta">' + g.arquivos.length + ' arq.</span>'
+      + '<span class="pill ' + (g.completo ? 'pill-ok">completo' : 'pill-falta">faltam docs') + '</span>'
+      + '</div><div class="arquivos">';
+    g.arquivos.forEach(function (a) {
+      html += '<div class="arq"><span class="tipo">' + esc(a.tipo) + '</span>'
+            + esc(a.nome) + ' <span class="grupo-meta">' + (a.competencia || '') + ' · ' + a.tamanhoKb + ' KB</span></div>';
+    });
+    html += '</div></div>';
+  });
+
+  alvo.innerHTML = html;
+  atualizarBotoes();
+}
+
+function abrir(i, e) { document.getElementById('g' + i).classList.toggle('aberto'); }
+function sel(nome, v) { if (v) SELECAO[nome] = true; else delete SELECAO[nome]; atualizarBotoes(); }
+function marcar(v) {
+  DADOS.grupos.forEach(function (g) { if (v) { SELECAO[g.empresa] = true; } else { delete SELECAO[g.empresa]; } });
+  renderizar();
+}
+function atualizarBotoes() {
+  var n = Object.keys(SELECAO).length;
+  document.getElementById('btn-gerar').disabled = (n === 0);
+  document.getElementById('btn-gerar').textContent =
+    n <= 1 ? 'Gerar relatório' : 'Gerar ' + n + ' relatórios (lote)';
+  if (!FILA.length) {
+    document.getElementById('msg').textContent =
+      n ? n + ' empresa(s) selecionada(s).' : 'Selecione as empresas e clique em Gerar.';
+  }
+}
+document.getElementById('busca').oninput = renderizar;
+document.getElementById('filtro').onchange = renderizar;
+
+// ---------------- geração (individual e em lote) ----------------
+function gerar() {
+  FILA = DADOS.grupos.filter(function (g) { return SELECAO[g.empresa]; });
+  if (!FILA.length) return;
+  parado = false; feitos = 0;
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('btn-gerar').disabled = true;
+  document.getElementById('btn-parar').disabled = false;
+  proximo();
+}
+
+function proximo() {
+  if (parado || feitos >= FILA.length) return finalizar();
+  var g = FILA[feitos];
+  var pct = Math.round(feitos / FILA.length * 100);
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('msg').innerHTML =
+    '<span class="spin"></span> (' + (feitos + 1) + '/' + FILA.length + ') Analisando ' + esc(g.empresa) + '…';
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      logar(r);
+      feitos++;
+      proximo();
+    })
+    .withFailureHandler(function (e) {
+      logar({ ok: false, empresa: g.empresa, erro: e.message || String(e) });
+      feitos++;
+      proximo();
+    })
+    .apiGerarUm({
+      empresa: { empresa: g.empresa, fantasia: g.fantasia, cnpj: g.cnpj, codigo: g.codigo, linha: g.linha },
+      arquivos: g.arquivos.map(function (a) { return { id: a.id, nome: a.nome, tipo: a.tipo }; })
+    });
+}
+
+function logar(r) {
+  var d = document.createElement('div');
+  if (r.ok) {
+    d.className = 'ok';
+    d.innerHTML = '<b>' + esc(r.empresa) + '</b> — ' + esc(r.periodo || '') + ' · ' + r.segundos + 's'
+      + ' <a href="' + r.slidesUrl + '" target="_blank">Slides</a>'
+      + (r.pdfUrl ? ' <a href="' + r.pdfUrl + '" target="_blank">PDF</a>' : '')
+      + (r.observacoes && r.observacoes.length
+          ? '<br><span style="color:#8a3b1c">obs.: ' + esc(r.observacoes.join(' | ')) + '</span>' : '');
+  } else {
+    d.className = 'erro';
+    d.innerHTML = '<b>' + esc(r.empresa || '') + '</b> — ' + esc(r.erro || 'falha desconhecida');
+  }
+  document.getElementById('log').prepend(d);
+}
+
+function parar() { parado = true; document.getElementById('msg').textContent = 'Interrompido pelo usuário.'; finalizar(); }
+
+function finalizar() {
+  document.getElementById('pf').style.width = '100%';
+  document.getElementById('btn-parar').disabled = true;
+  document.getElementById('btn-gerar').disabled = false;
+  if (!parado) document.getElementById('msg').textContent =
+    'Concluído: ' + feitos + ' de ' + FILA.length + ' empresa(s).';
+}
+
+// ---------------- upload ----------------
+var PENDENTES = [];
+var dz = document.getElementById('dz');
+['dragenter', 'dragover'].forEach(function (ev) {
+  dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('hover'); });
+});
+['dragleave', 'drop'].forEach(function (ev) {
+  dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('hover'); });
+});
+dz.addEventListener('drop', function (e) { adicionar(e.dataTransfer.files); });
+document.getElementById('file').addEventListener('change', function (e) { adicionar(e.target.files); });
+
+function adicionar(files) {
+  for (var i = 0; i < files.length; i++) {
+    if (files[i].type !== 'application/pdf' && !/\.pdf$/i.test(files[i].name)) continue;
+    PENDENTES.push(files[i]);
+  }
+  var h = '';
+  PENDENTES.forEach(function (f, i) {
+    h += '<div><span>' + esc(f.name) + '</span><span style="margin-left:auto;color:#6E7C75">'
+       + Math.round(f.size / 1024) + ' KB</span><span id="u' + i + '"></span></div>';
+  });
+  document.getElementById('lista-upload').innerHTML = h;
+  document.getElementById('btn-enviar').disabled = !PENDENTES.length;
+}
+
+function enviarArquivos() {
+  var sub = document.getElementById('empresa-upload').value;
+  document.getElementById('btn-enviar').disabled = true;
+  var i = 0;
+  (function sobe() {
+    if (i >= PENDENTES.length) {
+      PENDENTES = [];
+      document.getElementById('msg').textContent = 'Upload concluído. Recarregando a pasta…';
+      carregarDrive();
+      document.querySelector('.tab[data-p="drive"]').click();
+      return;
+    }
+    var f = PENDENTES[i];
+    document.getElementById('u' + i).innerHTML = '<span class="spin"></span>';
+    var fr = new FileReader();
+    fr.onload = function () {
+      var b64 = fr.result.split(',')[1];
+      google.script.run
+        .withSuccessHandler(function (r) {
+          document.getElementById('u' + i).textContent = r.ok ? ' ✓' : ' ✕';
+          i++; sobe();
+        })
+        .withFailureHandler(function () {
+          document.getElementById('u' + i).textContent = ' ✕';
+          i++; sobe();
+        })
+        .apiUploadArquivo({ nome: f.name, mime: 'application/pdf', dados: b64, subpasta: sub });
+    };
+    fr.readAsDataURL(f);
+  })();
+}
+
+// ---------------- utilidades ----------------
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function falhou(e) {
+  document.getElementById('lista').innerHTML =
+    '<div class="aviso"><b>Erro:</b> ' + esc(e.message || e) + '</div>';
+}
+
+carregarDrive();
+</script>
+</body>
+</html>

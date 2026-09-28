@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<title>Relatório de Consultoria Contábil · Exemplo</title>
+<style>
+  :root{
+    --escuro:#003528; --verde:#00A176; --claro:#7FBBA3;
+    --bg:#F4F7F5; --card:#FFFFFF; --linha:#DDE7E2; --suave:#EEF5F1; --destaque:#E3F3EC;
+    --t1:#003528; --t2:#3A453F; --t3:#6E7C75; --alerta:#C1592F;
+    --sombra:0 1px 2px rgba(0,53,40,.06), 0 1px 3px rgba(0,53,40,.04);
+    --w:1160px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--t2);font:14px/1.5 Arial,Helvetica,sans-serif}
+  a{color:var(--verde)}
+  .wrap{max-width:var(--w);margin:0 auto;padding:0 24px}
+
+  /* ---------- cabeçalho ---------- */
+  header{background:var(--escuro);color:#fff}
+  header .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:16px;padding-bottom:16px}
+  header h1{margin:0;font:600 17px Arial;letter-spacing:.01em}
+  header .sub{margin:2px 0 0;font-size:12px;color:var(--claro)}
+  .quem{margin-left:auto;font-size:12px;color:var(--claro);text-align:right;line-height:1.4}
+  .selo{display:inline-block;background:#12503E;color:#A8D4C2;border-radius:3px;
+        padding:1px 7px;font-size:10px;font-weight:bold;letter-spacing:.04em;margin-top:2px}
+
+  /* ---------- abas ---------- */
+  .abas{background:var(--escuro);border-top:1px solid #12503E}
+  .abas .wrap{display:flex;gap:2px}
+  .aba{padding:9px 16px;font-size:13px;color:var(--claro);cursor:pointer;user-select:none;
+       border-bottom:2px solid transparent}
+  .aba:hover{color:#fff}
+  .aba.ativa{color:#fff;font-weight:bold;border-bottom-color:var(--verde)}
+
+  main{padding-top:20px;padding-bottom:132px}
+
+  /* ---------- avisos ---------- */
+  .aviso,.info{border-radius:6px;padding:12px 14px;font-size:13px;margin-bottom:14px}
+  .aviso{background:#FCEFE8;border-left:3px solid var(--alerta);color:#8A3B1C}
+  .info{background:var(--destaque);border-left:3px solid var(--verde);color:#0B4A38}
+  .aviso ul{margin:6px 0 0 18px;padding:0}
+  .aviso li{margin:2px 0}
+
+  /* ---------- barra de ferramentas ---------- */
+  .ferramentas{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  input[type=search],input[type=text],select{padding:8px 11px;border:1px solid var(--linha);
+       border-radius:6px;font:13px Arial;background:#fff;color:var(--t2);min-width:0}
+  input[type=search]{flex:1;min-width:220px}
+  input[type=text]{width:100%}
+  input:focus,select:focus{outline:2px solid var(--claro);outline-offset:-1px}
+
+  button{border:0;border-radius:6px;padding:9px 15px;font:600 13px Arial;cursor:pointer}
+  .b1{background:var(--verde);color:#fff}    .b1:hover{background:#008A65}
+  .b2{background:#fff;color:var(--escuro);border:1px solid var(--linha)}  .b2:hover{background:var(--suave)}
+  .b3{background:var(--escuro);color:#fff}   .b3:hover{background:#12503E}
+  button:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ---------- lista de empresas ---------- */
+  .lista{background:var(--card);border:1px solid var(--linha);border-radius:8px;
+         box-shadow:var(--sombra);overflow:hidden}
+  .grupo{border-bottom:1px solid var(--linha)}
+  .grupo:last-child{border-bottom:0}
+  .gcab{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer}
+  .gcab:hover{background:var(--suave)}
+  .gnome{flex:1;min-width:0;font-weight:bold;color:var(--t1);font-size:13.5px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-size:11.5px;color:var(--t3);font-weight:normal;white-space:nowrap}
+  .pill{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:bold;white-space:nowrap}
+  .pok{background:var(--destaque);color:#00734F}
+  .pfalta{background:#FCEFE8;color:var(--alerta)}
+  .arqs{display:none;padding:2px 14px 12px 46px;background:#FBFDFC}
+  .grupo.aberto .arqs{display:block}
+
+  /* linha de arquivo — o nome é quem estica, o resto é fixo */
+  .arq{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:12.5px;color:var(--t3)}
+  .arq .nome{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)}
+  .tipo{flex:0 0 auto;background:var(--suave);color:var(--t1);border-radius:4px;
+        padding:2px 8px;font-size:10.5px;white-space:nowrap;min-width:118px;text-align:center}
+  .arq select{flex:0 0 250px;max-width:250px;font-size:12px;padding:5px 8px}
+  .arq .aponta{flex:0 0 auto;font-size:11.5px;color:var(--verde);white-space:nowrap}
+  .arq .aponta .falha{color:#b3261e}
+  .opt-ia{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--t3);
+          white-space:nowrap;cursor:pointer;margin-right:4px}
+  .opt-ia input{margin:0;cursor:pointer}
+  .arq{flex-wrap:wrap}
+  .nota-ia{flex:1 1 100%;font-size:11.5px;line-height:1.5;color:var(--t3);
+           background:var(--suave);border-radius:6px;padding:6px 9px;margin:2px 0 4px}
+
+  /* ---------- upload ---------- */
+  .dz{border:2px dashed var(--claro);border-radius:10px;background:#fff;padding:36px;
+      text-align:center;color:var(--t3);font-size:13px}
+  .dz.hover{background:var(--suave);border-color:var(--verde)}
+  .lu{margin-top:10px}
+  .lu div{display:flex;gap:10px;align-items:center;padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--linha)}
+
+  /* ---------- configuração ---------- */
+  .cfg{background:var(--card);border:1px solid var(--linha);border-radius:8px;
+       box-shadow:var(--sombra);padding:18px;margin-bottom:14px}
+  .cfg h3{margin:0 0 4px;font-size:14px;color:var(--t1)}
+  .cfg p.sub{margin:0 0 14px;font-size:12.5px;color:var(--t3);line-height:1.55}
+  .campo{display:block;margin-bottom:12px}
+  .campo span{display:block;font-size:12px;font-weight:bold;color:var(--t1);margin-bottom:4px}
+  .campo small{display:block;font-size:11.5px;color:var(--t3);margin-top:4px}
+  .passos{margin:8px 0 14px 18px;padding:0;font-size:12.5px;color:var(--t2);line-height:1.7}
+  pre.saida{background:var(--suave);border-radius:6px;padding:11px;font:12px/1.5 monospace;
+            white-space:pre-wrap;margin:10px 0 0;color:var(--t2)}
+
+  /* ---------- rodapé de ação ---------- */
+  #rodape{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--linha);
+          box-shadow:0 -2px 10px rgba(0,53,40,.07)}
+  #rodape .wrap{padding-top:10px;padding-bottom:10px}
+  .acao{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .acao .msg{font-size:12.5px;color:var(--t3);flex:1;min-width:200px}
+  .acao .botoes{display:flex;gap:8px}
+  .trilho{height:5px;background:var(--suave);border-radius:4px;overflow:hidden;margin:8px 0 0;display:none}
+  .trilho.on{display:block}
+  .preench{height:100%;width:0;background:var(--verde);transition:width .3s}
+  .log{max-height:132px;overflow:auto;font-size:12.5px;margin-top:6px}
+  .log div{padding:4px 0;border-bottom:1px solid var(--linha)}
+  .log div:last-child{border-bottom:0}
+  .log .ok::before{content:'✓ ';color:var(--verde);font-weight:bold}
+  .log .erro::before{content:'✕ ';color:var(--alerta);font-weight:bold}
+  .log a{margin-left:8px;text-decoration:none}
+
+  .vazio{text-align:center;color:var(--t3);padding:40px 20px;font-size:13px}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--suave);
+        border-top-color:var(--verde);border-radius:50%;animation:g .7s linear infinite;vertical-align:-2px}
+  @keyframes g{to{transform:rotate(360deg)}}
+
+  @media (max-width:720px){
+    .wrap{padding:0 14px}
+    .arq{flex-wrap:wrap}
+    .arq select{flex:1 1 100%;max-width:none}
+    .acao .botoes{width:100%}
+    .acao .botoes button{flex:1}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div>
+      <h1>Relatório de Consultoria Contábil</h1>
+      <div class="sub">Escritório Contábil Exemplo · Time de IA</div>
+    </div>
+    <div class="quem" id="quem"><span class="spin"></span></div>
+  </div>
+</header>
+
+<nav class="abas">
+  <div class="wrap">
+    <div class="aba ativa" data-p="gerar">Gerar relatórios</div>
+    <div class="aba" data-p="enviar">Enviar documentos</div>
+    <div class="aba" data-p="config" id="aba-config" style="display:none">Configuração</div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <div id="pendencias"></div>
+
+  <section class="painel" id="p-gerar">
+    <div class="ferramentas">
+      <input type="search" id="busca" placeholder="Filtrar empresa, CNPJ ou código Domínio…">
+      <select id="filtro">
+        <option value="todas">Todas</option>
+        <option value="completas">Só com documentos completos</option>
+        <option value="incompletas">Só incompletas</option>
+      </select>
+      <button class="b2" onclick="carregar()">↻ Recarregar</button>
+      <button class="b2" onclick="marcar(true)">Marcar todas</button>
+      <button class="b2" onclick="marcar(false)">Limpar</button>
+    </div>
+    <div id="semvinculo"></div>
+    <div id="lista"><div class="vazio"><span class="spin"></span> Lendo a pasta do Drive…</div></div>
+  </section>
+
+  <section class="painel" id="p-enviar" style="display:none">
+    <div class="ferramentas">
+      <select id="emp-upload"><option value="">Enviar para a raiz da pasta</option></select>
+      <button class="b2" onclick="document.getElementById('file').click()">Escolher arquivos…</button>
+      <input type="file" id="file" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
+    </div>
+    <div class="dz" id="dz">
+      Arraste aqui os arquivos de DRE, Balancete e Análise Horizontal<br>
+      <small>Excel (.xls, .xlsx) ou CSV exportados do Domínio — leitura direta, sem IA.<br>
+      PDF também funciona, mas passa pelo Gemini e consome cota.</small>
+    </div>
+    <div id="msg-up"></div>
+    <div class="lu" id="lu"></div>
+    <div class="ferramentas" style="margin-top:14px">
+      <button class="b1" id="btn-enviar" onclick="enviar()" disabled>Enviar para o Drive</button>
+    </div>
+  </section>
+
+  <section class="painel" id="p-config" style="display:none">
+    <div class="cfg">
+      <h3>Chave da API do Gemini</h3>
+      <p class="sub">Vale para todos os usuários do app. Obtenha em
+        <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>,
+        no botão “Criar chave de API”. São 39 caracteres começando com <b>AIza</b> — não é o endereço do site.</p>
+      <label class="campo">
+        <span>Nova chave</span>
+        <input type="text" id="cfg-api" placeholder="AIzaSy…">
+        <small id="cfg-api-atual"></small>
+      </label>
+      <button class="b1" onclick="salvarCfg('GEMINI_API_KEY','cfg-api')">Salvar chave</button>
+      <button class="b2" onclick="diagnosticar()">Diagnosticar</button>
+      <button class="b2" onclick="testarGeracao()">Testar geração</button>
+      <button class="b2" onclick="saldoCota()">Saldo da cota</button>
+      <pre class="saida" id="saida-api" style="display:none"></pre>
+    </div>
+
+    <div class="cfg">
+      <h3>Identificação de empresa pelo CNPJ</h3>
+      <p class="sub">Pega o primeiro PDF da pasta de documentos, manda a IA ler o CNPJ dentro dele
+        e compara com o CNPJ de cada empresa do cadastro. Mostra exatamente onde a comparação
+        quebra — chave inválida, CNPJ em branco na planilha ou CNPJ que não existe lá.</p>
+      <button class="b2" onclick="diagnosticarId()">Testar identificação</button>
+      <pre class="saida" id="saida-id" style="display:none"></pre>
+    </div>
+
+    <div class="cfg">
+      <h3>Template do Slides — 16:9</h3>
+      <p class="sub">Usado pelo botão <b>Gerar Slides</b>. O botão abaixo monta os 12 slides
+        no padrão SOGIBA numa apresentação nova e grava o ID sozinho.</p>
+      <label class="campo">
+        <span>TEMPLATE_ID (aceita a URL inteira)</span>
+        <input type="text" id="cfg-tpl" placeholder="1AbC… ou https://docs.google.com/presentation/d/…">
+        <small id="cfg-tpl-atual"></small>
+      </label>
+      <button class="b1" onclick="salvarCfg('TEMPLATE_ID','cfg-tpl')">Salvar ID</button>
+      <button class="b2" onclick="criarTemplate('TEMPLATE_ID')">Criar template 16:9</button>
+      <pre class="saida" id="saida-tpl" style="display:none"></pre>
+    </div>
+
+    <div class="cfg">
+      <h3>Template do PDF — A4 paisagem</h3>
+      <p class="sub">Usado pelo botão <b>Gerar PDF</b>. O tamanho da página de um Google Slides
+        <b>não pode ser definido por código</b> — o Google não expõe isso em nenhuma API. Por isso
+        este é o único passo manual do sistema:</p>
+      <ol class="passos">
+        <li>Crie uma apresentação em branco em <a href="https://slides.new" target="_blank">slides.new</a></li>
+        <li>Vá em <b>Arquivo ▸ Configuração da página ▸ Personalizado</b></li>
+        <li>Digite <b>29,7</b> × <b>21</b> e escolha <b>Centímetros</b> ▸ OK</li>
+        <li>Cole o link dela aqui embaixo e clique em <b>Montar A4</b></li>
+      </ol>
+      <label class="campo">
+        <span>Apresentação em A4 (link ou ID)</span>
+        <input type="text" id="cfg-tplpdf" placeholder="https://docs.google.com/presentation/d/…">
+        <small id="cfg-tplpdf-atual"></small>
+      </label>
+      <button class="b1" onclick="criarTemplatePdf()">Montar A4 nessa apresentação</button>
+      <pre class="saida" id="saida-tplpdf" style="display:none"></pre>
+    </div>
+
+    <div class="cfg">
+      <h3>Pastas do Drive</h3>
+      <p class="sub">Em branco, o script resolve sozinho pelo caminho
+        <em>Servidor IA ▸ 2. Automações ▸ Relatório de Consultoria Contábil ▸ documentosautomatizaotimecontabil</em>.</p>
+      <label class="campo">
+        <span>Pasta dos PDFs de entrada</span>
+        <input type="text" id="cfg-pdocs" placeholder="ID ou URL da pasta">
+        <small id="cfg-pdocs-atual"></small>
+      </label>
+      <label class="campo">
+        <span>Pasta de saída dos relatórios</span>
+        <input type="text" id="cfg-psaida" placeholder="ID ou URL da pasta">
+      </label>
+      <button class="b1" onclick="salvarCfg('PASTA_DOCUMENTOS_ID','cfg-pdocs')">Salvar entrada</button>
+      <button class="b1" onclick="salvarCfg('PASTA_SAIDA_ID','cfg-psaida')">Salvar saída</button>
+      <pre class="saida" id="saida-pasta" style="display:none"></pre>
+    </div>
+
+    <div class="cfg">
+      <h3>Administradores</h3>
+      <p class="sub">Quem enxerga e altera esta aba. Separe por vírgula.
+        Seu próprio e-mail é sempre mantido na lista.</p>
+      <label class="campo">
+        <span>E-mails</span>
+        <input type="text" id="cfg-admins" placeholder="fulano@exemplo.com.br, usuario9@exemplo.com.br">
+      </label>
+      <button class="b1" onclick="salvarCfg('ADMINS','cfg-admins')">Salvar administradores</button>
+      <pre class="saida" id="saida-admins" style="display:none"></pre>
+    </div>
+
+    <div class="cfg">
+      <h3>Usuários liberados</h3>
+      <p class="sub">Quem pode enviar documentos e gerar relatórios. Separe por vírgula.
+        Os administradores sempre podem. Lista vazia = só os administradores.</p>
+      <label class="campo">
+        <span>E-mails</span>
+        <input type="text" id="cfg-usuarios" placeholder="fulano@exemplo.com.br, usuario9@exemplo.com.br">
+      </label>
+      <button class="b1" onclick="salvarCfg('USUARIOS','cfg-usuarios')">Salvar usuários</button>
+      <pre class="saida" id="saida-usuarios" style="display:none"></pre>
+    </div>
+  </section>
+</main>
+
+<div id="rodape">
+  <div class="wrap">
+    <div class="acao">
+      <div class="msg" id="msg">Carregando…</div>
+      <label class="opt-ia" title="Sem marcar, os textos saem por regras: instantâneos e sem consumir cota do Gemini.">
+        <input type="checkbox" id="cb-ia"> refinar textos com IA
+      </label>
+      <div class="botoes">
+        <button class="b2" id="btn-parar" onclick="parar()" disabled>Parar</button>
+        <button class="b3" id="btn-slides" onclick="gerar('slides')" disabled>Gerar Slides</button>
+        <button class="b1" id="btn-pdf" onclick="gerar('pdf')" disabled>Gerar PDF (A4)</button>
+      </div>
+    </div>
+    <div class="trilho" id="trilho"><div class="preench" id="pf"></div></div>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+var CTX = null, DADOS = { grupos: [], semVinculo: [] }, EMPRESAS = [];
+var SEL = {}, FILA = [], parado = false, feitos = 0, SAIDA = 'slides';
+
+// ---------------- abas ----------------
+document.querySelectorAll('.aba').forEach(function (t) {
+  t.onclick = function () {
+    document.querySelectorAll('.aba').forEach(function (x) { x.classList.remove('ativa'); });
+    document.querySelectorAll('.painel').forEach(function (x) { x.style.display = 'none'; });
+    t.classList.add('ativa');
+    document.getElementById('p-' + t.dataset.p).style.display = '';
+  };
+});
+
+// ---------------- contexto ----------------
+function contexto() {
+  google.script.run.withSuccessHandler(function (c) {
+    CTX = c;
+    if (c && c.semAcesso) {
+      document.body.innerHTML =
+        '<div style="max-width:520px;margin:12vh auto;padding:0 20px">' +
+        '<h2 style="margin:0 0 10px">Acesso n\u00e3o liberado</h2>' +
+        '<p>Voc\u00ea est\u00e1 conectado como <b>' + esc(c.email || 'usu\u00e1rio n\u00e3o identificado') + '</b>.</p>' +
+        '<p style="color:#4b6156">Pe\u00e7a a um administrador do Time de IA para incluir esse' +
+        ' e-mail na lista de usu\u00e1rios do app.</p></div>';
+      return;
+    }
+    document.getElementById('quem').innerHTML =
+      esc(c.email || 'não identificado') + (c.admin ? '<br><span class="selo">ADMINISTRADOR</span>' : '');
+
+    if (c.admin) {
+      document.getElementById('aba-config').style.display = '';
+      texto('cfg-api-atual', c.config.apiKey ? ('Chave atual: ' + c.config.apiKey) : 'Nenhuma chave configurada.');
+      html('cfg-tpl-atual', c.config.templateId
+        ? ('Atual: <a href="' + c.config.templateUrl + '" target="_blank">abrir template 16:9</a>')
+        : 'Ainda não criado.');
+      html('cfg-tplpdf-atual', c.config.templatePdfId
+        ? ('Atual: <a href="' + c.config.templatePdfUrl + '" target="_blank">abrir template A4</a> — página '
+           + esc(c.config.templatePdfDim || '?')
+           + (c.config.templatePdfEhA4 ? ' ✓ A4 paisagem' : ' ⚠ não é A4 (29,7 × 21 cm = 842 × 595 pt)'))
+        : 'Ainda não criado.');
+      html('cfg-pdocs-atual', c.config.pasta
+        ? ('Resolvendo para: <a href="' + c.config.pastaUrl + '" target="_blank">' + esc(c.config.pasta) + '</a>') : '');
+      var ad = document.getElementById('cfg-admins');
+      if (ad) ad.value = (c.config.admins || []).join(', ');
+      var us = document.getElementById('cfg-usuarios');
+      if (us) us.value = (c.config.usuarios || []).join(', ');
+    }
+
+    var alvo = document.getElementById('pendencias');
+    if (c.pendencias && c.pendencias.length) {
+      alvo.innerHTML = '<div class="aviso"><b>Falta configurar:</b><ul>'
+        + c.pendencias.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('')
+        + '</ul>' + (c.admin ? 'Use a aba <b>Configuração</b>.'
+            : 'Peça a um administrador (' + esc((c.config.admins || []).join(', ')) + ').') + '</div>';
+    } else { alvo.innerHTML = ''; }
+
+    carregar();
+  }).withFailureHandler(function (e) {
+    document.getElementById('quem').textContent = '—';
+    document.getElementById('pendencias').innerHTML =
+      '<div class="aviso"><b>Erro ao iniciar:</b> ' + esc(e.message || e) + '</div>';
+    document.getElementById('msg').textContent = 'Falha ao carregar o contexto.';
+  }).apiContexto();
+}
+
+// ---------------- lista ----------------
+function carregar() {
+  document.getElementById('lista').innerHTML =
+    '<div class="vazio"><span class="spin"></span> Lendo a pasta do Drive…</div>';
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) {
+      // O Drive do Google falha de forma intermitente. Tentar sozinho evita
+      // que um soluço de 2 segundos vire uma tela de erro para o usuário.
+      if (!window.__tentLista) window.__tentLista = 0;
+      if (window.__tentLista < 2) {
+        window.__tentLista++;
+        document.getElementById('msg').textContent = 'Drive instável — tentando de novo…';
+        setTimeout(carregar, 2500);
+        return;
+      }
+      window.__tentLista = 0;
+      document.getElementById('lista').innerHTML =
+        '<div class="aviso"><b>Não foi possível abrir a pasta.</b><br>' + esc(r.erro) + '</div>';
+      document.getElementById('msg').textContent = 'Pasta indisponível.';
+      return;
+    }
+    window.__tentLista = 0;
+    DADOS = r;
+    google.script.run.withSuccessHandler(function (le) {
+      if (le.ok) EMPRESAS = le.empresas;
+      var sel = document.getElementById('emp-upload');
+      sel.innerHTML = '<option value="">Enviar para a raiz da pasta</option>';
+      EMPRESAS.forEach(function (e) {
+        var o = document.createElement('option');
+        o.value = e.empresa; o.textContent = e.empresa;
+        sel.appendChild(o);
+      });
+      renderSemVinculo(); render();
+    }).apiListarEmpresas();
+  }).withFailureHandler(function (e) {
+    document.getElementById('lista').innerHTML = '<div class="aviso">' + esc(e.message || e) + '</div>';
+  }).apiListarDocumentosDrive();
+}
+
+function opcoesEmpresas() {
+  return '<option value="">— escolher empresa —</option>' + EMPRESAS.map(function (e) {
+    return '<option value="' + esc(e.empresa) + '">' + esc(e.empresa)
+         + (e.codigo ? ' (cód. ' + esc(e.codigo) + ')' : '') + '</option>';
+  }).join('');
+}
+
+function renderSemVinculo() {
+  var alvo = document.getElementById('semvinculo');
+  if (!DADOS.semVinculo || !DADOS.semVinculo.length) { alvo.innerHTML = ''; return; }
+  var ops = opcoesEmpresas();
+  var h = '<div class="info"><b>' + DADOS.semVinculo.length + ' arquivo(s) sem empresa identificada.</b> '
+        + 'O nome do arquivo não bateu com nenhum cadastro, ou bateu com mais de um. '
+        + 'Deixe a IA ler o cabeçalho de cada PDF, ou escolha à mão.'
+        + '<div style="margin-top:9px"><button class="b1" id="btn-ia" onclick="identificar()">'
+        + '🔎 Identificar com IA</button></div></div>'
+        + '<div class="lista" style="margin-bottom:14px"><div style="padding:8px 14px">';
+  DADOS.semVinculo.forEach(function (a, i) {
+    h += '<div class="arq" id="sv' + i + '">'
+       + '<span class="tipo">' + esc(a.tipo) + '</span>'
+       + '<span class="nome" title="' + esc(a.nome) + '">' + esc(a.nome) + '</span>'
+       + '<span class="aponta" id="sva' + i + '"></span>'
+       + '<select onchange="vincular(' + i + ',this.value)">' + ops + '</select></div>';
+  });
+  alvo.innerHTML = h + '</div></div>';
+}
+
+function identificar() {
+  var b = document.getElementById('btn-ia');
+  b.disabled = true; b.innerHTML = '<span class="spin"></span> Lendo os PDFs…';
+  DADOS.semVinculo.forEach(function (a, i) { texto('sva' + i, '…'); });
+
+  google.script.run.withSuccessHandler(function (r) {
+    b.disabled = false; b.textContent = '🔎 Identificar com IA';
+    if (!r.ok) { alerta(r.erro); return; }
+
+    var achou = 0;
+    // aplica de trás para frente: vincular() remove itens do array
+    for (var i = r.resultados.length - 1; i >= 0; i--) {
+      var res = r.resultados[i];
+      if (res.ok && res.empresa) { achou++; vincularPorIA(i, res.empresa, res.criterio); }
+      else { falhou(i, res); }
+    }
+    var base = r.base
+      ? ' — cadastro com ' + r.base.empresas + ' empresa(s), ' + r.base.comCnpj + ' com CNPJ preenchido.'
+      : '';
+    document.getElementById('msg').textContent =
+      achou + ' de ' + r.resultados.length + ' arquivo(s) identificado(s) pela IA.' + base;
+  }).withFailureHandler(function (e) {
+    b.disabled = false; b.textContent = '🔎 Identificar com IA';
+    alerta(e.message || e);
+  }).apiIdentificarEmpresas(DADOS.semVinculo.map(function (a) { return a.id; }));
+}
+
+// Mostra, ao lado do arquivo, o que a IA conseguiu ler dentro do PDF e por que
+// isso nao casou com nenhuma empresa do cadastro.
+function falhou(i, res) {
+  var el = document.getElementById('sva' + i);
+  if (!el) return;
+  var lido = res.lido || {};
+  var partes = [];
+  if (lido.nome) partes.push(esc(lido.nome));
+  if (lido.cnpj) partes.push('CNPJ ' + esc(lido.cnpj));
+  el.innerHTML = '<span class="falha">✕ sem empresa</span>';
+
+  var pai = document.getElementById('sv' + i);
+  if (!pai) return;
+  var nota = pai.querySelector('.nota-ia');
+  if (!nota) {
+    nota = document.createElement('div');
+    nota.className = 'nota-ia';
+    pai.appendChild(nota);
+  }
+  var leu = partes.length
+    ? 'A IA leu no PDF: ' + partes.join(' · ')
+    : 'A IA não encontrou nome nem CNPJ dentro do PDF.';
+  nota.innerHTML = esc(leu).replace('A IA leu no PDF:', '<b>A IA leu no PDF:</b>')
+    + (res.erro ? '<br>' + esc(res.erro) : '');
+}
+
+function alerta(msg) {
+  document.getElementById('semvinculo').insertAdjacentHTML('afterbegin',
+    '<div class="aviso">' + esc(msg) + '</div>');
+}
+
+function vincularPorIA(i, emp, criterio) { juntar(i, emp, criterio); }
+function vincular(i, nome) {
+  if (!nome) return;
+  juntar(i, EMPRESAS.filter(function (e) { return e.empresa === nome; })[0] || { empresa: nome }, '');
+}
+
+function juntar(i, emp, criterio) {
+  var arq = DADOS.semVinculo[i]; if (!arq) return;
+  var g = DADOS.grupos.filter(function (x) { return x.empresa === emp.empresa; })[0];
+  if (!g) {
+    g = { empresa: emp.empresa, fantasia: emp.fantasia || '', cnpj: emp.cnpj || '',
+          codigo: emp.codigo || '', linha: emp.linha || 0, arquivos: [], completo: false, viaIA: !!criterio };
+    DADOS.grupos.push(g);
+    DADOS.grupos.sort(function (a, b) { return a.empresa.localeCompare(b.empresa); });
+  }
+  if (criterio) g.viaIA = true;
+  g.arquivos.push(arq);
+  var t = g.arquivos.map(function (a) { return a.tipo; }).join('|');
+  g.completo = /DRE/.test(t) && /Balancete/.test(t);
+  DADOS.semVinculo.splice(i, 1);
+  SEL[emp.empresa] = true;
+  renderSemVinculo(); render();
+}
+
+function render() {
+  var termo = (document.getElementById('busca').value || '').toLowerCase();
+  var filtro = document.getElementById('filtro').value;
+  var vis = DADOS.grupos.filter(function (g) {
+    if (filtro === 'completas' && !g.completo) return false;
+    if (filtro === 'incompletas' && g.completo) return false;
+    if (!termo) return true;
+    return (g.empresa + ' ' + g.fantasia + ' ' + g.cnpj + ' ' + g.codigo).toLowerCase().indexOf(termo) >= 0;
+  });
+  if (!vis.length) {
+    document.getElementById('lista').innerHTML =
+      '<div class="lista"><div class="vazio">Nenhuma empresa com documentos nesta pasta.</div></div>';
+    botoes(); return;
+  }
+  var h = '<div class="lista">';
+  vis.forEach(function (g, i) {
+    h += '<div class="grupo" id="g' + i + '"><div class="gcab" onclick="abrir(' + i + ')">'
+      + '<input type="checkbox" ' + (SEL[g.empresa] ? 'checked' : '')
+      + ' onclick="event.stopPropagation();sel(this.value,this.checked)" value="' + esc(g.empresa) + '">'
+      + '<div class="gnome" title="' + esc(g.empresa) + '">' + esc(g.empresa)
+      + (g.codigo ? ' <span class="meta">· cód. ' + esc(g.codigo) + '</span>' : '')
+      + (g.viaIA ? ' <span class="meta">· via IA</span>' : '') + '</div>'
+      + '<span class="meta">' + g.arquivos.length + ' arq.</span>'
+      + '<span class="pill ' + (g.completo ? 'pok">completo' : 'pfalta">faltam docs') + '</span>'
+      + '</div><div class="arqs">';
+    g.arquivos.forEach(function (a) {
+      h += '<div class="arq"><span class="tipo">' + esc(a.tipo) + '</span>'
+         + '<span class="nome" title="' + esc(a.nome) + '">' + esc(a.nome) + '</span>'
+         + '<span class="meta">' + esc(a.competencia || '') + ' · ' + a.tamanhoKb + ' KB</span></div>';
+    });
+    h += '</div></div>';
+  });
+  document.getElementById('lista').innerHTML = h + '</div>';
+  botoes();
+}
+
+function abrir(i) { document.getElementById('g' + i).classList.toggle('aberto'); }
+function sel(nome, v) { if (v) SEL[nome] = true; else delete SEL[nome]; botoes(); }
+function marcar(v) {
+  DADOS.grupos.forEach(function (g) { if (v) SEL[g.empresa] = true; else delete SEL[g.empresa]; });
+  render();
+}
+
+function botoes() {
+  var n = Object.keys(SEL).length;
+  var c = (CTX && CTX.config) || {};
+  var rodando = FILA.length && feitos < FILA.length && !parado;
+  document.getElementById('btn-slides').disabled = !n || !c.templateId || rodando;
+  document.getElementById('btn-pdf').disabled    = !n || !c.templatePdfId || rodando;
+  document.getElementById('btn-slides').textContent = n > 1 ? 'Gerar ' + n + ' Slides' : 'Gerar Slides';
+  document.getElementById('btn-pdf').textContent    = n > 1 ? 'Gerar ' + n + ' PDFs (A4)' : 'Gerar PDF (A4)';
+  if (!rodando) {
+    document.getElementById('msg').textContent = n
+      ? (n + ' empresa(s) selecionada(s).')
+      : 'Selecione as empresas e escolha o formato.';
+  }
+}
+document.getElementById('busca').oninput = render;
+document.getElementById('filtro').onchange = render;
+
+// ---------------- geração ----------------
+function gerar(saida) {
+  FILA = DADOS.grupos.filter(function (g) { return SEL[g.empresa]; });
+  if (!FILA.length) return;
+  SAIDA = saida; parado = false; feitos = 0;
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('trilho').classList.add('on');
+  document.getElementById('btn-parar').disabled = false;
+  botoes();
+  proximo();
+}
+function proximo() {
+  if (parado || feitos >= FILA.length) return fim();
+  var g = FILA[feitos];
+  document.getElementById('pf').style.width = Math.round(feitos / FILA.length * 100) + '%';
+  document.getElementById('msg').innerHTML = '<span class="spin"></span> (' + (feitos + 1) + '/' + FILA.length
+    + ') Analisando ' + esc(g.empresa) + ' — ' + (SAIDA === 'pdf' ? 'PDF A4' : 'Slides')
+    + '. Leva de 1 a 3 minutos por empresa.';
+  google.script.run
+    .withSuccessHandler(function (r) { logar(r); feitos++; agendarProximo(); })
+    .withFailureHandler(function (e) {
+      var msg = e.message || String(e);
+      logar({ ok: false, empresa: g.empresa, erro: msg });
+      feitos++;
+      // Cota diária estourada: seguir a fila só produz erro em série e não
+      // gera nada. Melhor parar e dizer isso de uma vez.
+      if (/Cota DIARIA|Cota DIÁRIA/i.test(msg)) {
+        parado = true;
+        document.getElementById('msg').textContent =
+          'Lote interrompido: a cota diária do Gemini acabou. As empresas restantes não foram processadas.';
+        return fim();
+      }
+      agendarProximo();
+    })
+    .apiGerarUm({
+      saida: SAIDA,
+      enriquecerIa: !!(document.getElementById('cb-ia') || {}).checked,
+      empresa: { empresa: g.empresa, fantasia: g.fantasia, cnpj: g.cnpj, codigo: g.codigo, linha: g.linha },
+      arquivos: g.arquivos.map(function (a) { return { id: a.id, nome: a.nome, tipo: a.tipo }; })
+    });
+}
+// Respiro entre empresas. O servidor já segura as chamadas dentro da cota,
+// mas esperar aqui não consome tempo de execução do Apps Script — é de graça.
+var PAUSA_LOTE_MS = 3000;
+function agendarProximo() {
+  if (parado || feitos >= FILA.length) return proximo();
+  document.getElementById('msg').innerHTML =
+    '<span class="spin"></span> Pausa de alguns segundos entre empresas, para não estourar a cota do Gemini…';
+  setTimeout(proximo, PAUSA_LOTE_MS);
+}
+function logar(r) {
+  var d = document.createElement('div');
+  if (r.ok) {
+    d.className = 'ok';
+    // Tempo por etapa ao lado do total: sem isso, "está lento" não diz onde.
+    var et = r.etapas || {};
+    var detalhe = Object.keys(et).map(function (n) { return n + ' ' + et[n] + 's'; }).join(' · ');
+    d.innerHTML = '<b>' + esc(r.empresa) + '</b> — ' + esc(r.periodo || '') + ' · ' + r.segundos + 's'
+      + (detalhe ? ' <span style="color:var(--t3)">(' + esc(detalhe) + ')</span>' : '')
+      + (r.rastroIa ? '<br><span style="color:var(--t3)">IA: ' + esc(r.rastroIa) + '</span>' : '')
+      + (r.arquivamento && r.arquivamento.movidos ? '<br><span style="color:var(--t3)">Arquivado: ' + esc(r.arquivamento.movidos + ' doc(s) em ' + r.arquivamento.pasta) + '</span>' : '')
+      + (r.arquivamento && r.arquivamento.erros && r.arquivamento.erros.length ? '<br><span style="color:var(--t3)">Arquivamento parcial: ' + esc(r.arquivamento.erros.join(' | ')) + '</span>' : '')
+      + (r.pdfUrl ? ' <a href="' + r.pdfUrl + '" target="_blank">abrir PDF</a>' : '')
+      + ' <a href="' + r.slidesUrl + '" target="_blank">abrir Slides</a>'
+      + (r.observacoes && r.observacoes.length
+          ? '<br><span style="color:#8A3B1C">obs.: ' + esc(r.observacoes.join(' | ')) + '</span>' : '');
+  } else {
+    d.className = 'erro';
+    d.innerHTML = '<b>' + esc(r.empresa || '') + '</b> — ' + esc(r.erro || 'falha desconhecida');
+  }
+  document.getElementById('log').prepend(d);
+}
+function parar() { parado = true; document.getElementById('msg').textContent = 'Interrompido.'; fim(); }
+function fim() {
+  document.getElementById('pf').style.width = '100%';
+  document.getElementById('btn-parar').disabled = true;
+  var n = feitos, t = FILA.length;
+  FILA = [];
+  botoes();
+  if (!parado) document.getElementById('msg').textContent = 'Concluído: ' + n + ' de ' + t + '.';
+}
+
+// ---------------- upload ----------------
+var PEND = [];
+var dz = document.getElementById('dz');
+['dragenter','dragover'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('hover'); }); });
+['dragleave','drop'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('hover'); }); });
+dz.addEventListener('drop', function (e) { add(e.dataTransfer.files); });
+document.getElementById('file').addEventListener('change', function (e) { add(e.target.files); });
+
+function add(fs) {
+  var recusados = [];
+  for (var i = 0; i < fs.length; i++) {
+    // O filtro antigo aceitava só PDF e descartava o resto sem avisar — por isso
+    // arrastar um .xls parecia não fazer nada. Agora vale a extensão, e o que
+    // for recusado aparece na tela em vez de sumir.
+    if (!/\.(pdf|xls|xlsx|csv)$/i.test(fs[i].name)) { recusados.push(fs[i].name); continue; }
+    PEND.push(fs[i]);
+  }
+  document.getElementById('lu').innerHTML = PEND.map(function (f, i) {
+    return '<div><span class="nome">' + esc(f.name) + '</span>'
+         + '<span style="margin-left:auto;color:#6E7C75">' + Math.round(f.size / 1024) + ' KB</span>'
+         + '<span id="u' + i + '"></span></div>';
+  }).join('');
+  document.getElementById('btn-enviar').disabled = !PEND.length;
+  document.getElementById('msg-up').innerHTML = recusados.length
+    ? ('<div class="aviso">Ignorado(s): ' + esc(recusados.join(', '))
+       + '. Formatos aceitos: PDF, XLS, XLSX e CSV.</div>')
+    : '';
+}
+function enviar() {
+  var sub = document.getElementById('emp-upload').value;
+  document.getElementById('btn-enviar').disabled = true;
+  var i = 0;
+  (function sobe() {
+    if (i >= PEND.length) {
+      PEND = []; document.getElementById('lu').innerHTML = '';
+      document.getElementById('msg').textContent = 'Upload concluído. Recarregando a pasta…';
+      carregar();
+      document.querySelector('.aba[data-p="gerar"]').click();
+      return;
+    }
+    document.getElementById('u' + i).innerHTML = '<span class="spin"></span>';
+    var fr = new FileReader();
+    fr.onload = function () {
+      google.script.run
+        .withSuccessHandler(function (r) { texto('u' + i, r.ok ? ' ✓' : ' ✕'); i++; sobe(); })
+        .withFailureHandler(function () { texto('u' + i, ' ✕'); i++; sobe(); })
+        .apiUploadArquivo({ nome: PEND[i].name, mime: PEND[i].type || '',
+                            dados: fr.result.split(',')[1], subpasta: sub });
+    };
+    fr.readAsDataURL(PEND[i]);
+  })();
+}
+
+// ---------------- configuração ----------------
+var SAIDAS = { GEMINI_API_KEY:'saida-api', TEMPLATE_ID:'saida-tpl',
+               PASTA_DOCUMENTOS_ID:'saida-pasta', PASTA_SAIDA_ID:'saida-pasta', ADMINS:'saida-admins', USUARIOS:'saida-usuarios' };
+
+function salvarCfg(chave, campo) {
+  var el = document.getElementById(campo);
+  var out = mostrar(SAIDAS[chave], 'Salvando…');
+  google.script.run.withSuccessHandler(function (r) {
+    out.textContent = r.ok ? ('✓ ' + r.mensagem + (r.valor ? '\n' + r.valor : '')) : ('✕ ' + r.erro);
+    if (r.ok) { el.value = ''; contexto(); if (chave === 'GEMINI_API_KEY') diagnosticar(); }
+  }).withFailureHandler(function (e) { out.textContent = '✕ ' + (e.message || e); })
+    .apiSalvarConfig(chave, el.value);
+}
+function diagnosticar() {
+  // Armadilha comum: digitar a chave no campo e clicar em Diagnosticar sem salvar.
+  // O diagnostico le o que esta GRAVADO, nao o que esta na caixa de texto.
+  var campo = document.getElementById('cfg-api');
+  if (campo && campo.value.trim()) {
+    mostrar('saida-api',
+      '⚠ Há uma chave digitada no campo que ainda NÃO foi salva.\n\n'
+      + 'O diagnóstico lê o valor gravado no sistema, não o que está na caixa de texto.\n'
+      + 'Clique em “Salvar chave” primeiro — o diagnóstico roda sozinho logo depois.');
+    return;
+  }
+  var out = mostrar('saida-api', 'Consultando a API…');
+  google.script.run.withSuccessHandler(function (r) { out.textContent = r.ok ? r.texto : r.erro; })
+    .withFailureHandler(function (e) { out.textContent = e.message || e; }).apiDiagnosticoChave();
+}
+function diagnosticarId() {
+  var out = mostrar('saida-id', 'Lendo o primeiro PDF da pasta… leva alguns segundos.');
+  google.script.run.withSuccessHandler(function (r) { out.textContent = r.ok ? r.texto : ('✕ ' + r.erro); })
+    .withFailureHandler(function (e) { out.textContent = '✕ ' + (e.message || e); })
+    .apiDiagnosticarIdentificacao(null);
+}
+function saldoCota() {
+  var out = mostrar('saida-api', 'Consultando o saldo por modelo…');
+  google.script.run.withSuccessHandler(function (r) { out.textContent = r.ok ? r.texto : ('✕ ' + r.erro); })
+    .withFailureHandler(function (e) { out.textContent = '✕ ' + (e.message || e); })
+    .apiSaldoCota();
+}
+function testarGeracao() {
+  var out = mostrar('saida-api', 'Testando cada modelo com um pedido mínimo…');
+  google.script.run.withSuccessHandler(function (r) { out.textContent = r.ok ? r.texto : ('✕ ' + r.erro); })
+    .withFailureHandler(function (e) { out.textContent = '✕ ' + (e.message || e); })
+    .apiTestarGeracao();
+}
+function criarTemplate(chave) {
+  var out = mostrar('saida-tpl', 'Montando os 12 slides… leva cerca de um minuto.');
+  google.script.run.withSuccessHandler(function (r) {
+    out.textContent = r.ok
+      ? ('✓ Template criado e configurado.\nPágina: ' + r.dimensao + '\n' + r.url)
+      : ('✕ ' + r.erro);
+    if (r.ok) contexto();
+  }).withFailureHandler(function (e) { out.textContent = '✕ ' + (e.message || e); })
+    .apiCriarTemplate(null, chave);
+}
+function criarTemplatePdf() {
+  var alvo = document.getElementById('cfg-tplpdf').value;
+  if (!alvo) { mostrar('saida-tplpdf', '✕ Cole antes o link da apresentação que você já ajustou para 29,7 × 21 cm.'); return; }
+  var out = mostrar('saida-tplpdf', 'Montando os 12 slides em A4… leva cerca de um minuto.');
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) { out.textContent = '✕ ' + r.erro; return; }
+    out.textContent = '✓ Template A4 montado.\nPágina: ' + r.dimensao
+      + (r.ehA4 ? '  ✓ confere com A4 paisagem' : '\n⚠ ATENÇÃO: não é A4. Ajuste Arquivo ▸ Configuração da página ▸ Personalizado ▸ 29,7 × 21 cm e monte de novo.')
+      + '\n' + r.url;
+    contexto();
+  }).withFailureHandler(function (e) { out.textContent = '✕ ' + (e.message || e); })
+    .apiCriarTemplate(alvo, 'TEMPLATE_PDF_ID');
+}
+
+// ---------------- utilidades ----------------
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function texto(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+function html(id, v) { var e = document.getElementById(id); if (e) e.innerHTML = v; }
+function mostrar(id, v) {
+  var e = document.getElementById(id);
+  e.style.display = 'block'; e.textContent = v; return e;
+}
+
+contexto();
+</script>
+</body>
+</html>
